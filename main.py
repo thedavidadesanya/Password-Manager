@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generate_password():
@@ -25,24 +26,39 @@ def generate_password():
     pyperclip.copy(password) #helps to copy the password string
 
 
+def search_password():
+    pass
+
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save_to_file():
-    text = [website_entry.get(), email_entry.get(),password_entry.get()]
+
+    website = website_entry.get()
+    email = email_entry.get()
+    password = password_entry.get()
+    new_data = {website: {"email ":email,
+                          "password:": password,
+                          }
+                }
 
     if len(website_entry.get()) == 0 or len(password_entry.get()) == 0:
         messagebox.showinfo(title="Ooops", message="Please make sure you didn't leave any field empyty")
     else:
-        is_ok = messagebox.askokcancel(title=website_entry, message=f"These are the details entered: \n Email: {email_entry.get()}"
-                               f"\nPassword: {password_entry.get()} \n Is it ok to save?")
-        if is_ok:
-            with open("saved_password", mode="a") as file:
+        try:
+            with open("data.json", mode="r") as file:
+                #Reading old data
+                data = json.load(file)
+                #Updating old data with new data
+        except FileNotFoundError:
+            with open("data.json", mode="w") as file:
+                data.update(new_data, file, indent=4)
+        else:
+            #updating old data with new data
+            data.update(new_data)
 
-                for n in range(len(text)):
-                    if text[n] != text[-1]:
-                        file.write(text[n]+" - ")
-                    else:
-                        file.write(text[n]+"\n")
-
+            with open("data.json", mode="w") as file:
+                #Saving updated data
+                json.dump(data, file, indent=4)
+        finally:
             website_entry.delete(0, END)
             password_entry.delete(0, END)
 
@@ -71,12 +87,12 @@ password_label.grid(row=3, column=0)
 
 
 website_entry = Entry(width=35)
-website_entry.grid(row=1, column=1, columnspan=2)
+website_entry.grid(row=1, column=1)
 website_entry.focus()
 email_entry=Entry(width=35,)
-email_entry.grid(row=2, column=1, columnspan=2)
+email_entry.grid(row=2, column=1)
 email_entry.insert(0, "david@gmail.com")
-password_entry = Entry(width=21)
+password_entry = Entry(width=35)
 password_entry.grid(row=3, column=1)
 
 
@@ -85,6 +101,9 @@ generate_password_button.grid(row=3, column=2)
 
 add_button = Button(text="Add", width=35, command=save_to_file)
 add_button.grid(row=4, column=1, columnspan=2)
+
+search_button = Button(text="Search", command= search_password)
+search_button.grid(row=1, column=2)
 
 
 
